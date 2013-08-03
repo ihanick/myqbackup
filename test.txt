@@ -1,0 +1,243 @@
+full/xtrabackup_checkpoints
+backup_type = full-prepared
+from_lsn = 0
+to_lsn = 10864274
+last_lsn = 10864274
+compact = 0
+# next run
+full/xtrabackup_checkpoints
+backup_type = full-prepared
+from_lsn = 0
+to_lsn = 10864274
+last_lsn = 10864274
+compact = 0
+inc-1/xtrabackup_checkpoints
+backup_type = incremental
+from_lsn = 10864274
+to_lsn = 10864429
+last_lsn = 10864429
+compact = 0
+# next run
+full/xtrabackup_checkpoints
+backup_type = full-prepared
+from_lsn = 0
+to_lsn = 10864274
+last_lsn = 10864274
+compact = 0
+inc-1/xtrabackup_checkpoints
+backup_type = incremental
+from_lsn = 10864274
+to_lsn = 10864429
+last_lsn = 10864429
+compact = 0
+inc-2/xtrabackup_checkpoints
+backup_type = incremental
+from_lsn = 10864429
+to_lsn = 10865333
+last_lsn = 10865333
+compact = 0
+# next run
+full/xtrabackup_checkpoints
+backup_type = full-prepared
+from_lsn = 0
+to_lsn = 10864274
+last_lsn = 10864274
+compact = 0
+inc-1/xtrabackup_checkpoints
+backup_type = incremental
+from_lsn = 10864274
+to_lsn = 10864429
+last_lsn = 10864429
+compact = 0
+inc-2/xtrabackup_checkpoints
+backup_type = incremental
+from_lsn = 10864429
+to_lsn = 10865333
+last_lsn = 10865333
+compact = 0
+inc-3/xtrabackup_checkpoints
+backup_type = incremental
+from_lsn = 10865333
+to_lsn = 10866237
+last_lsn = 10866237
+compact = 0
+# next run
+full/xtrabackup_checkpoints
+backup_type = full-prepared
+from_lsn = 0
+to_lsn = 10864274
+last_lsn = 10864274
+compact = 0
+inc-1/xtrabackup_checkpoints
+backup_type = incremental
+from_lsn = 10864274
+to_lsn = 10864429
+last_lsn = 10864429
+compact = 0
+inc-2/xtrabackup_checkpoints
+backup_type = incremental
+from_lsn = 10864429
+to_lsn = 10865333
+last_lsn = 10865333
+compact = 0
+inc-3/xtrabackup_checkpoints
+backup_type = incremental
+from_lsn = 10865333
+to_lsn = 10866237
+last_lsn = 10866237
+compact = 0
+inc-4/xtrabackup_checkpoints
+backup_type = incremental
+from_lsn = 10866237
+to_lsn = 10866392
+last_lsn = 10866392
+compact = 0
+# next run
+full/xtrabackup_checkpoints
+backup_type = full-prepared
+from_lsn = 0
+to_lsn = 10864274
+last_lsn = 10864274
+compact = 0
+inc-1/xtrabackup_checkpoints
+backup_type = incremental
+from_lsn = 10864274
+to_lsn = 10864429
+last_lsn = 10864429
+compact = 0
+inc-2/xtrabackup_checkpoints
+backup_type = incremental
+from_lsn = 10864429
+to_lsn = 10865333
+last_lsn = 10865333
+compact = 0
+inc-3/xtrabackup_checkpoints
+backup_type = incremental
+from_lsn = 10865333
+to_lsn = 10866237
+last_lsn = 10866237
+compact = 0
+inc-4/xtrabackup_checkpoints
+backup_type = incremental
+from_lsn = 10866237
+to_lsn = 10866392
+last_lsn = 10866392
+compact = 0
+inc-5/xtrabackup_checkpoints
+backup_type = incremental
+from_lsn = 10866392
+to_lsn = 10867296
+last_lsn = 10867296
+compact = 0
+# next run
+full/xtrabackup_checkpoints
+backup_type = full-prepared
+from_lsn = 0
+to_lsn = 10864429
+last_lsn = 10864429
+compact = 0
+inc-2/xtrabackup_checkpoints
+backup_type = incremental
+from_lsn = 10864429
+to_lsn = 10865333
+last_lsn = 10865333
+compact = 0
+inc-3/xtrabackup_checkpoints
+backup_type = incremental
+from_lsn = 10865333
+to_lsn = 10866237
+last_lsn = 10866237
+compact = 0
+inc-4/xtrabackup_checkpoints
+backup_type = incremental
+from_lsn = 10866237
+to_lsn = 10866392
+last_lsn = 10866392
+compact = 0
+inc-5/xtrabackup_checkpoints
+backup_type = incremental
+from_lsn = 10866392
+to_lsn = 10867296
+last_lsn = 10867296
+compact = 0
+inc-6/xtrabackup_checkpoints
+backup_type = incremental
+from_lsn = 10867296
+to_lsn = 10868184
+last_lsn = 10868184
+compact = 0
+# next run
+full/xtrabackup_checkpoints
+backup_type = full-prepared
+from_lsn = 0
+to_lsn = 10865333
+last_lsn = 10865333
+compact = 0
+inc-2/xtrabackup_checkpoints
+backup_type = incremental
+from_lsn = 10865333
+to_lsn = 10866237
+last_lsn = 10866237
+compact = 0
+inc-3/xtrabackup_checkpoints
+backup_type = incremental
+from_lsn = 10866237
+to_lsn = 10866392
+last_lsn = 10866392
+compact = 0
+inc-4/xtrabackup_checkpoints
+backup_type = incremental
+from_lsn = 10866392
+to_lsn = 10867296
+last_lsn = 10867296
+compact = 0
+inc-5/xtrabackup_checkpoints
+backup_type = incremental
+from_lsn = 10867296
+to_lsn = 10868184
+last_lsn = 10868184
+compact = 0
+inc-6/xtrabackup_checkpoints
+backup_type = incremental
+from_lsn = 10868184
+to_lsn = 10869088
+last_lsn = 10869088
+compact = 0
+# next run
+full/xtrabackup_checkpoints
+backup_type = full-prepared
+from_lsn = 0
+to_lsn = 10866392
+last_lsn = 10866392
+compact = 0
+inc-1/xtrabackup_checkpoints
+backup_type = incremental
+from_lsn = 10866392
+to_lsn = 10867296
+last_lsn = 10867296
+compact = 0
+inc-2/xtrabackup_checkpoints
+backup_type = incremental
+from_lsn = 10867296
+to_lsn = 10868184
+last_lsn = 10868184
+compact = 0
+inc-3/xtrabackup_checkpoints
+backup_type = incremental
+from_lsn = 10868184
+to_lsn = 10869088
+last_lsn = 10869088
+compact = 0
+inc-4/xtrabackup_checkpoints
+backup_type = incremental
+from_lsn = 10869088
+to_lsn = 10869992
+last_lsn = 10869992
+compact = 0
+inc-5/xtrabackup_checkpoints
+backup_type = incremental
+from_lsn = 10869992
+to_lsn = 10869992
+last_lsn = 10869992
+compact = 0
+# next run
