@@ -29,7 +29,7 @@ Create a cron job file, e.g.
 /etc/cron.d/myqbackup
 
 With contents:
-# One full backup + 23 hourly incremental backups
+ # One full backup + 23 hourly incremental backups
 0 * * * * root /usr/bin/myqbackup --inc=23 /home/backup/mysql
 
 

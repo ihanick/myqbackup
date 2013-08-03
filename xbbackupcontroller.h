@@ -5,6 +5,7 @@
 #include <QProcess>
 #include <QDebug>
 #include <QFile>
+#include <QDir>
 
 class XBBackupController : public QObject
 {
@@ -26,6 +27,15 @@ public slots:
             emit terminate();
         }
         qDebug() << "Xtrabackup backup procedure finished with" << exitcode << status;
+
+        if(backup_inc_path.length() == 0) { // full backup
+            QDir backup_root(target_dir);
+            backup_root.cdUp();
+            backup_root.mkdir(backup_root.absolutePath() + "/fake-full");
+            QFile checkpoints(target_dir + "/xtrabackup_checkpoints");
+            checkpoints.copy(backup_root.absolutePath()+"/fake-full/xtrabackup_checkpoints");
+        }
+
         emit xbbackup_finished();
     }
 

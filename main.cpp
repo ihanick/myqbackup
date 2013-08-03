@@ -34,8 +34,8 @@ int main(int argc, char *argv[])
 {
     QString datadir;
     QString version;
-    QString xtrabackup_path("/home/ihanick/src/percona-xtrabackup-2.1.3/bin/");
     QString xtrabackup_binary;
+    bool compression = false;
 
     QCoreApplication a(argc, argv);
 
@@ -50,6 +50,7 @@ int main(int argc, char *argv[])
     QString ni_inc_last;
     QString ni_inc_path;
     QString restore_dir;
+    QString xtrabackup_prefix = "/home/ihanick/src/percona-xtrabackup-2.1.3";
     int max_incrementals = 0;
     qDebug() << cmdline_args;
     foreach(QString arg, cmdline_args) {
@@ -60,11 +61,18 @@ int main(int argc, char *argv[])
             } else if(arg.startsWith("--restore-to=")) {
                 restore_dir = QStringRef(&arg, QString("--restore-to=").length(),
                                          arg.length()-QString("--restore-to=").length()).toString();
+            } else if(arg.startsWith("--compression")) {
+                compression = true;
+            } else if(arg.startsWith("--xbprefix=")) {
+                xtrabackup_prefix =  restore_dir = QStringRef(&arg, QString("--xbprefix=").length(),
+                        arg.length()-QString("--xbprefix=").length()).toString();
             }
         } else {
             backup_dest = arg;
         }
     }
+
+    QString xtrabackup_path(xtrabackup_prefix + "/bin/");
 
     qDebug() << "Backup destination: " << backup_dest;
     if(max_incrementals) {
@@ -82,7 +90,8 @@ int main(int argc, char *argv[])
         if(max_incrementals) {
             ni_inc_base = backup_dest_dir.absolutePath() + "/mysql-base-full";
 
-            if(backup_dest_dir.exists("full")) {
+            if(backup_dest_dir.exists("full") || backup_dest_dir.exists("fake-full")
+                    || QFile::exists(backup_dest_dir.absolutePath() + "/full.tar.gz")) {
                 qDebug() << "Full backup already exists";
 
                 incremental_idx=1;
@@ -97,7 +106,7 @@ int main(int argc, char *argv[])
                 ni_inc_last = backup_dest_dir.absolutePath() + "/mysql-last-full";
                 qDebug() << "Next backup number:"<<incremental_idx;
                 if(incremental_idx == 1) {
-                    backup_inc_base = backup_dest_dir.absolutePath() + "/full";
+                    backup_inc_base = backup_dest_dir.absolutePath() + "/fake-full";
                 } else {
                     backup_inc_base = backup_dest_dir.absolutePath() + QString("/inc-%1").arg(incremental_idx-1);
                 }
@@ -119,8 +128,6 @@ int main(int argc, char *argv[])
         ni_inc_last = backup_dest_dir.absolutePath() + "/mysql-last-full";
         backup_inc_path = backup_dest_dir.absolutePath() + QString("/inc-%1").arg(max_incrementals);
     }
-
-
 
     MySQLConnection myconnection;
 
@@ -153,14 +160,14 @@ int main(int argc, char *argv[])
 
 
     if(max_incrementals == 0) { // prepare standalone full backup
-        directory_preparer = new XBPreparer(backup_dest, 0, incremental_idx, restore_dir, xbbinary, &a);
-    } else if(incremental_idx == 1) {
-        directory_preparer = new XBPreparer(backup_dest, 1, incremental_idx, restore_dir, xbbinary, &a);
+        directory_preparer = new XBPreparer(backup_dest, 0, incremental_idx, restore_dir, xbbinary, compression, &a);
+    } else if(incremental_idx == 0) {
+        directory_preparer = new XBPreparer(backup_dest, 1, incremental_idx, restore_dir, xbbinary, compression, &a);
     } else if(incremental_idx > max_incrementals) {
-        directory_preparer = new XBPreparer(backup_dest, 2, incremental_idx, restore_dir, xbbinary, &a);
+        directory_preparer = new XBPreparer(backup_dest, 2, incremental_idx, restore_dir, xbbinary, compression, &a);
 
     } else {
-        directory_preparer = new XBPreparer(backup_dest, 3, incremental_idx, restore_dir, xbbinary, &a);
+        directory_preparer = new XBPreparer(backup_dest, 3, incremental_idx, restore_dir, xbbinary, compression, &a);
     }
 
     // backup
