@@ -2,8 +2,13 @@
 #include "mysql.h"
 #include "stdio.h"
 
-MySQLConnection::MySQLConnection(QObject *parent) :
-    QObject(parent)
+MySQLConnection::MySQLConnection(QString server_, QString user_,
+                                 QString password_, QString database_, QObject *parent) :
+    QObject(parent),
+    server(server_),
+    user(user_),
+    password(password_),
+    database(database_)
 {
 
     server = "localhost";

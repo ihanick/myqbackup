@@ -9,7 +9,7 @@ class MySQLConnection : public QObject
 {
     Q_OBJECT
 public:
-    explicit MySQLConnection(QObject *parent = 0);
+    explicit MySQLConnection(QString server_, QString user_, QString password_, QString database_, QObject *parent = 0);
     ~MySQLConnection();
 
 

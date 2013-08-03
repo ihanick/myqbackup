@@ -20,14 +20,20 @@ SOURCES += main.cpp \
     xbbackupcontroller.cpp \
     noninnodbsyncer.cpp \
     xbpreparer.cpp \
-    mysqlconnection.cpp
+    mysqlconnection.cpp \
+    clioption.cc \
+    cliparser.cc \
+    myqbackupconfiguration.cpp
 
 HEADERS += \
     filecreationwatcherthread.h \
     xbbackupcontroller.h \
     noninnodbsyncer.h \
     xbpreparer.h \
-    mysqlconnection.h
+    mysqlconnection.h \
+    clioption.h \
+    cliparser.h \
+    myqbackupconfiguration.h
 
 INCLUDEPATH += /usr/include/mysql
 LIBS += -lmysqlclient_r

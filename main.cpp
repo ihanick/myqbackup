@@ -1,7 +1,6 @@
 #include <QCoreApplication>
 #include <QProcess>
 #include <QDebug>
-//#include <QRegularExpression>
 #include <QFile>
 
 #include "filecreationwatcherthread.h"
@@ -9,6 +8,8 @@
 #include "noninnodbsyncer.h"
 #include "xbpreparer.h"
 #include "mysqlconnection.h"
+#include "myqbackupconfiguration.h"
+
 
 /* incremental mode
  * --incremental-copies=N
@@ -16,67 +17,25 @@
  *  for each run in 2-N incremental based on previous incremental backup created
  *  for N+1 run we applying first incremental to full backup and making backup based on N
  * */
-
-void printXtrabackupError(QProcess& process) {
-    qDebug() << process.readAllStandardOutput();
-    QByteArray xtrabackup_stderr(process.readAllStandardError());
-    QString xtrabackup_output(xtrabackup_stderr);
-/*
-    QRegularExpression re("xtrabackup: error: (.*)$");
-    QRegularExpressionMatch match = re.match(xtrabackup_output);
-    if (match.hasMatch()) {
-        qDebug() << "Got error:" << match.captured(1);
-    }
-*/
-}
-
 int main(int argc, char *argv[])
 {
     QString datadir;
     QString version;
     QString xtrabackup_binary;
-    bool compression = false;
 
     QCoreApplication a(argc, argv);
 
-    qDebug() << a.libraryPaths();
+    MyQBackupConfiguration *conf = new MyQBackupConfiguration(&a);
 
-    QStringList cmdline_args = QCoreApplication::arguments();
-
-    QString backup_dest(".");
     QString backup_inc_base;
     QString backup_inc_path;
     QString ni_inc_base;
     QString ni_inc_last;
     QString ni_inc_path;
-    QString restore_dir;
-    QString xtrabackup_prefix = "/home/ihanick/src/percona-xtrabackup-2.1.3";
-    int max_incrementals = 0;
-    qDebug() << cmdline_args;
-    foreach(QString arg, cmdline_args) {
-        if(arg.startsWith("--")) {
-            qDebug() << "Found option:" << arg;
-            if(arg.startsWith("--inc=")) {
-                max_incrementals = QStringRef(&arg, 6, arg.length()-6).toString().toInt();
-            } else if(arg.startsWith("--restore-to=")) {
-                restore_dir = QStringRef(&arg, QString("--restore-to=").length(),
-                                         arg.length()-QString("--restore-to=").length()).toString();
-            } else if(arg.startsWith("--compression")) {
-                compression = true;
-            } else if(arg.startsWith("--xbprefix=")) {
-                xtrabackup_prefix =  restore_dir = QStringRef(&arg, QString("--xbprefix=").length(),
-                        arg.length()-QString("--xbprefix=").length()).toString();
-            }
-        } else {
-            backup_dest = arg;
-        }
-    }
 
-    QString xtrabackup_path(xtrabackup_prefix + "/bin/");
-
-    qDebug() << "Backup destination: " << backup_dest;
-    if(max_incrementals) {
-        if(restore_dir.length()) {
+    qDebug() << "Backup destination: " << conf->backup_dest;
+    if(conf->max_incrementals) {
+        if(conf->is_restore_mode) {
             qDebug() << "restore incremental backup";
         } else {
             qDebug() << "Making incremental backup";
@@ -84,10 +43,12 @@ int main(int argc, char *argv[])
     }
 
     int incremental_idx=-1;
-    QDir backup_dest_dir(backup_dest);
+    QDir backup_dest_dir(conf->backup_dest);
 
-    if(restore_dir.length() == 0) {
-        if(max_incrementals) {
+    QString backup_dest = conf->backup_dest;
+
+    if(! conf->is_restore_mode) {
+        if(conf->max_incrementals) {
             ni_inc_base = backup_dest_dir.absolutePath() + "/mysql-base-full";
 
             if(backup_dest_dir.exists("full") || backup_dest_dir.exists("fake-full")
@@ -95,7 +56,7 @@ int main(int argc, char *argv[])
                 qDebug() << "Full backup already exists";
 
                 incremental_idx=1;
-                for(incremental_idx=1;incremental_idx <= max_incrementals; ++ incremental_idx) {
+                for(incremental_idx=1;incremental_idx <= conf->max_incrementals; ++ incremental_idx) {
                     if(backup_dest_dir.exists(QString("inc-%1").arg(incremental_idx))) {
                         qDebug() << "Found existing incremental backup";
                     } else {
@@ -123,15 +84,16 @@ int main(int argc, char *argv[])
             // full non-incremental backup
         }
     } else {
-        incremental_idx = max_incrementals;
+        incremental_idx = conf->max_incrementals;
         ni_inc_base = backup_dest_dir.absolutePath() + "/mysql-base-full";
         ni_inc_last = backup_dest_dir.absolutePath() + "/mysql-last-full";
-        backup_inc_path = backup_dest_dir.absolutePath() + QString("/inc-%1").arg(max_incrementals);
+        backup_inc_path = backup_dest_dir.absolutePath() + QString("/inc-%1").arg(conf->max_incrementals);
     }
 
-    MySQLConnection myconnection;
+    MySQLConnection *myconnection = new MySQLConnection(conf->server, conf->user,
+                                                        conf->password, conf->database, &a);
 
-    version = myconnection.version;
+    version = myconnection->version;
 
     if(version.startsWith("5.6.")) {
         xtrabackup_binary = "xtrabackup_56";
@@ -143,7 +105,7 @@ int main(int argc, char *argv[])
         xtrabackup_binary = "xtrabackup";
     }
 
-    QString xbbinary = xtrabackup_path.append(xtrabackup_binary);
+    QString xbbinary = conf->xtrabackup_path.append(xtrabackup_binary);
 
 
     qDebug() << "binary:"<< xbbinary;
@@ -155,23 +117,27 @@ int main(int argc, char *argv[])
     XBBackupController *backupctl = new XBBackupController(backup_dest, backup_inc_base, backup_inc_path, &a);
     NonInnoDBSyncer *rsync_syncer = new NonInnoDBSyncer(backup_dest,
                                                         ni_inc_base, ni_inc_last,
-                                                        restore_dir, max_incrementals, &myconnection, &a);
+                                                        conf->restore_dir, conf->max_incrementals, myconnection, &a);
     XBPreparer *directory_preparer = 0;
 
 
-    if(max_incrementals == 0) { // prepare standalone full backup
-        directory_preparer = new XBPreparer(backup_dest, 0, incremental_idx, restore_dir, xbbinary, compression, &a);
+    if(conf->max_incrementals == 0) { // prepare standalone full backup
+        directory_preparer = new XBPreparer(backup_dest, 0, incremental_idx,
+                                            conf->restore_dir, xbbinary, conf->compression, &a);
     } else if(incremental_idx == 0) {
-        directory_preparer = new XBPreparer(backup_dest, 1, incremental_idx, restore_dir, xbbinary, compression, &a);
-    } else if(incremental_idx > max_incrementals) {
-        directory_preparer = new XBPreparer(backup_dest, 2, incremental_idx, restore_dir, xbbinary, compression, &a);
+        directory_preparer = new XBPreparer(backup_dest, 1, incremental_idx,
+                                            conf->restore_dir, xbbinary, conf->compression, &a);
+    } else if(incremental_idx > conf->max_incrementals) {
+        directory_preparer = new XBPreparer(backup_dest, 2, incremental_idx,
+                                            conf->restore_dir, xbbinary, conf->compression, &a);
 
     } else {
-        directory_preparer = new XBPreparer(backup_dest, 3, incremental_idx, restore_dir, xbbinary, compression, &a);
+        directory_preparer = new XBPreparer(backup_dest, 3, incremental_idx,
+                                            conf->restore_dir, xbbinary, conf->compression, &a);
     }
 
     // backup
-    if(restore_dir.length() == 0) {
+    if(! conf->is_restore_mode) {
         QObject::connect(backupctl, SIGNAL(terminate()), &a, SLOT(quit()));
 
         FileCreationWatcherThread* xtrabackup_start_watcher = new FileCreationWatcherThread(&a);
