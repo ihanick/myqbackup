@@ -23,7 +23,10 @@ SOURCES += main.cpp \
     mysqlconnection.cpp \
     clioption.cc \
     cliparser.cc \
-    myqbackupconfiguration.cpp
+    myqbackupconfiguration.cpp \
+    xbstreamer.cpp \
+    sshfilecreationwatcher.cpp \
+    myqbackupmain.cpp
 
 HEADERS += \
     filecreationwatcherthread.h \
@@ -33,7 +36,12 @@ HEADERS += \
     mysqlconnection.h \
     clioption.h \
     cliparser.h \
-    myqbackupconfiguration.h
+    myqbackupconfiguration.h \
+    xbstreamer.h \
+    sshfilecreationwatcher.h \
+    myqbackupmain.h
 
+unix: !macx {
 INCLUDEPATH += /usr/include/mysql
 LIBS += -lmysqlclient_r
+}

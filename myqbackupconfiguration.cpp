@@ -14,7 +14,7 @@ MyQBackupConfiguration::MyQBackupConfiguration(QObject *parent) :
     max_incrementals = settings.value("incrementals", 6).toInt();
     backup_dest = settings.value("backup_path",".").toString();
     xtrabackup_prefix = settings.value("xtrabackup_prefix",
-                                               "/home/ihanick/src/percona-xtrabackup-2.1.3").toString();
+                                               "/home/ihanick/src/percona-xtrabackup-2.1.3/bin").toString();
     compression = settings.value("full_backup_compression", false).toBool();
 
     settings.endGroup();
@@ -41,6 +41,13 @@ MyQBackupConfiguration::MyQBackupConfiguration(QObject *parent) :
             << QLatin1String( "c" )
             << QLatin1String( "compress" )
             << QLatin1String( "compression" ) ) );
+
+    // --ssh=root@localhost
+    cliParser.addOption( CliOption(
+        QStringList()
+            << QLatin1String( "s" )
+            << QLatin1String( "ssh" )
+            << QLatin1String( "remote-ssh" ), true) );
 
     // --inc
     cliParser.addOption( CliOption(
@@ -116,9 +123,9 @@ MyQBackupConfiguration::MyQBackupConfiguration(QObject *parent) :
         is_restore_mode = true;
     }
 
-    const QString xbprefix_arg = cliParser.getArgument( QLatin1String( "x" ) );
+    const QString xbprefix_arg = cliParser.getArgument( QLatin1String( "xbprefix" ) );
     if(!xbprefix_arg.isNull()) {
-        xtrabackup_prefix = xbprefix_arg;
+        xtrabackup_prefix =xbprefix_arg;
         qDebug() << "Xtrabackup installation prefix"<< xtrabackup_prefix;
     }
 
@@ -157,6 +164,12 @@ MyQBackupConfiguration::MyQBackupConfiguration(QObject *parent) :
         qDebug() << "connection parameters: database"<< database;
     }
 
+    const QString ssh_arg = cliParser.getArgument( QLatin1String( "ssh" ) );
+    if(!ssh_arg.isNull()) {
+        ssh_host = ssh_arg;
+        qDebug() << "backup from remote ssh host:"<< ssh_host;
+    }
+
     // List of all the recognised option names (doesn't include option values)
     const QStringList optionNames = cliParser.getOptionNames();
     qDebug() << "option names"<< optionNames;
@@ -177,7 +190,5 @@ MyQBackupConfiguration::MyQBackupConfiguration(QObject *parent) :
     settings.setValue("database", database);
     settings.endGroup();
 
-    xtrabackup_path = (xtrabackup_prefix + "/bin/");
-
-
+    xtrabackup_path = (xtrabackup_prefix + "/");
 }

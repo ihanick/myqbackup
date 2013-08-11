@@ -1,5 +1,4 @@
 #include "mysqlconnection.h"
-#include "mysql.h"
 #include "stdio.h"
 
 MySQLConnection::MySQLConnection(QString server_, QString user_,
@@ -15,6 +14,9 @@ MySQLConnection::MySQLConnection(QString server_, QString user_,
     user = "root";
     password = ""; /* set me first */
     database = "mysql";
+
+
+#ifdef USE_LIB_MYSQL_CLIENT
     MYSQL_RES *res;
     MYSQL_ROW row;
 
@@ -32,7 +34,6 @@ MySQLConnection::MySQLConnection(QString server_, QString user_,
        exit(1);
     }
     res = mysql_use_result(conn);
-    /* output table name */
     while ((row = mysql_fetch_row(res)) != NULL)
        datadir = row[0];
     mysql_free_result(res);
@@ -43,30 +44,41 @@ MySQLConnection::MySQLConnection(QString server_, QString user_,
        exit(1);
     }
     res = mysql_use_result(conn);
-    /* output table name */
     while ((row = mysql_fetch_row(res)) != NULL)
        version = row[0];
     mysql_free_result(res);
+#else
+    datadir = "/var/lib/mysql";
+    version = "5.5.32";
+#endif
 }
 
 
 MySQLConnection::~MySQLConnection() {
     /* close connection */
+#ifdef USE_LIB_MYSQL_CLIENT
     mysql_close(conn);
+#endif
 }
 
 void MySQLConnection::lock_all_tables() {
+#ifdef USE_LIB_MYSQL_CLIENT
     if (mysql_query(conn, "FLUSH TABLES WITH READ LOCK")) {
        fprintf(stderr, "%s\n", mysql_error(conn));
        exit(1);
     }
+#endif
+    emit all_tables_locked();
 }
 
 
 void MySQLConnection::unlock_all_tables() {
+#ifdef USE_LIB_MYSQL_CLIENT
     if (mysql_query(conn, "UNLOCK TABLES")) {
        fprintf(stderr, "%s\n", mysql_error(conn));
        exit(1);
     }
+#endif
+    emit all_tables_unlocked();
 }
 

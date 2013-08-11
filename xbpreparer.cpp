@@ -1,19 +1,20 @@
 #include "xbpreparer.h"
 
-XBPreparer::XBPreparer(QString target, int prepare_type, int incremental_idx_, QString restore_to, QString nxtrabackup_binary, bool compression, QObject *parent) :
+XBPreparer::XBPreparer(QString target, int prepare_type, int incremental_idx_, QString restore_to, QString nxtrabackup_binary, bool compression, QString remote, QObject *parent) :
     QObject(parent),
     xtrabackup_binary(nxtrabackup_binary),
     target_dir(target),
     type(prepare_type),
     incremental_idx(incremental_idx_),
     restore_dir(restore_to),
-    use_compression(compression)
+    use_compression(compression),
+    ssh_remote(remote)
 {
 }
 
 bool removeDir(const QString & dirName)
 {
-	bool result;
+    bool result = false;
 	QDir dir(dirName);
 
 	if (dir.exists(dirName)) {
@@ -39,18 +40,44 @@ void XBPreparer::prepare() {
     QProcess xtrabackup_prepare_process;
     switch(type) {
     case 0:
+    {
+        if(ssh_remote.length() != 0) {
+            qDebug() << "should unpack standalone full backup to" << target_dir;
+            QDir dir(target_dir);
+            dir.mkdir(target_dir);
+            QProcess xbunpack;
+            xbunpack.setStandardInputFile(target_dir+".xbstream");
+            xbunpack.setWorkingDirectory(target_dir);
+            xbunpack.start(
+                        "/Users/ihanick/src/xtrabackup-2.1/src/xbstream",
+                        QStringList()
+                        << "-x"
+                        );
+
+            qDebug() << xbunpack.program() << xbunpack.arguments();
+            xbunpack.waitForFinished();
+            qDebug() << xbunpack.readAll() << xbunpack.readAllStandardError();
+        }
+
         xtrabackup_prepare_process.start(
                     xtrabackup_binary,
                     QStringList()
                     << "--prepare"
                     << (QString("--target-dir=")+target_dir) );
         break;
+    }
     case 1:
     {
         QDir last_inc_dir(target_dir);
         last_inc_dir.cdUp();
         qDebug() << "Backup dir" << last_inc_dir.absolutePath();
         QString inc_base = last_inc_dir.absolutePath() + "/full";
+
+        if(ssh_remote.length() != 0) {
+            qDebug() << "should unpack full backup to" << inc_base;
+            extract_xtrabackup_stream(inc_base+".xbstream", inc_base);
+        }
+
         xtrabackup_prepare_process.start(
                     xtrabackup_binary,
                     QStringList()
@@ -61,6 +88,11 @@ void XBPreparer::prepare() {
     }
     case 2:
     {
+        if(ssh_remote.length() != 0) {
+            qDebug() << "should unpack incremental backup to" << target_dir;
+            extract_xtrabackup_stream(target_dir+".xbstream", target_dir);
+        }
+
         QDir last_inc_dir(target_dir);
         last_inc_dir.cdUp();
         qDebug() << "Backup dir" << last_inc_dir.absolutePath();
@@ -77,7 +109,7 @@ void XBPreparer::prepare() {
                               << "-xzf"
                               << (last_inc_dir.absolutePath() + "/full.tar.gz")
                               );
-//            qDebug() << tar_process.program() << tar_process.arguments();
+            //            qDebug() << tar_process.program() << tar_process.arguments();
             tar_process.waitForFinished();
             qDebug() << tar_process.readAll() << tar_process.readAllStandardError();
         }
@@ -93,11 +125,19 @@ void XBPreparer::prepare() {
         break;
     }
     default:
+    {
+        if(ssh_remote.length() != 0) {
+            qDebug() << "should unpack incremental backup to" << target_dir;
+            extract_xtrabackup_stream(target_dir+".xbstream", target_dir);
+        }
         emit backup_ready();
         return;
     }
+
+    }
     xtrabackup_prepare_process.waitForFinished();
-    qDebug() << "Backup prepared by" << xtrabackup_binary;
+    qDebug() << "Backup prepared by" << xtrabackup_binary << type;
+    qDebug() << xtrabackup_prepare_process.program() << xtrabackup_prepare_process.arguments();
     qDebug() << xtrabackup_prepare_process.readAll()
              << xtrabackup_prepare_process.readAllStandardError();
 
@@ -207,4 +247,39 @@ void XBPreparer::restoreBackup() {
         qDebug() << xtrabackup_prepare_process.readAll()
                  << xtrabackup_prepare_process.readAllStandardError();
     }
+}
+
+void XBPreparer::extract_xtrabackup_stream(QString src, QString dst) {
+    QDir dir;
+    dir.mkdir(dst);
+    QDir last_inc_dir(dst);
+    last_inc_dir.cdUp();
+    QProcess xbunpack;
+    xbunpack.setStandardInputFile(src);
+    xbunpack.setWorkingDirectory(dst);
+    xbunpack.start(
+                "/Users/ihanick/src/xtrabackup-2.1/src/xbstream",
+                QStringList()
+                << "-x"
+                );
+
+    qDebug() << xbunpack.program() << xbunpack.arguments();
+    xbunpack.waitForFinished();
+    qDebug() << xbunpack.readAll() << xbunpack.readAllStandardError();
+    last_inc_dir.mkdir(last_inc_dir.absolutePath() + "/fake-full");
+    QFile cpinfo(dst+"/xtrabackup_checkpoints");
+    cpinfo.copy(last_inc_dir.absolutePath()+ "/fake-full/xtrabackup_checkpoints");
+    // if compression
+    QProcess decompressor;
+    decompressor.setWorkingDirectory(dst);
+    QString qpress_path("/Users/ihanick/src/qpress/");
+    decompressor.start(
+                "bash",
+                QStringList()
+                << "-c"
+                << (QString("for bf in `find . -iname \"*\\.qp\"`; do %1qpress -d $bf $(dirname $bf) && rm $bf; done").arg(qpress_path))
+                );
+    qDebug() << decompressor.program() << decompressor.arguments();
+    decompressor.waitForFinished();
+    qDebug() << decompressor.readAll() << decompressor.readAllStandardError();
 }

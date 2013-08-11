@@ -31,11 +31,22 @@ How to setup periodic backups:
 
 Create a cron job file, e.g. inside: /etc/cron.d/myqbackup
 
-With contents:
+Put two lines:
 ```
-\# One full backup + 23 hourly incremental backups
+# One full backup + 23 hourly incremental backups
 0 * * * * root /usr/bin/myqbackup --inc=23 /home/backup/mysql
 ```
+
+How to make backup from remote server:
+====
+```
+myqbackup --remote-ssh root@udb1 --xbprefix /Users/ihanick/src/xtrabackup-2.1/src /Users/ihanick/myqbackup
+```
+
+Currently allows to backup remote unix system from Linux or OS X host.
+In order to use OS X host for prepare you should install Percona Xtrabackup from sources. Only xtrabackup_your_mysql_server_version and xbstream binaries are required. For using compressed backups (highly recommended), additionally you should install qpress.
+
+Restore is exactly the same, currently backup could be restored only localy.
 
 
 How to compile:

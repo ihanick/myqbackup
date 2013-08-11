@@ -1,8 +1,12 @@
 #ifndef MYSQLCONNECTION_H
 #define MYSQLCONNECTION_H
 
+//#define USE_LIB_MYSQL_CLIENT
+
 #include <QObject>
+#ifdef USE_LIB_MYSQL_CLIENT
 #include <mysql.h>
+#endif
 
 
 class MySQLConnection : public QObject
@@ -25,7 +29,9 @@ public slots:
     void unlock_all_tables();
 
 private:
+#ifdef USE_LIB_MYSQL_CLIENT
     MYSQL *conn;
+#endif
     QString server;
     QString user;
     QString password;

@@ -2,14 +2,15 @@
 #include <QDir>
 
 NonInnoDBSyncer::NonInnoDBSyncer(QString target, QString inc_base, QString inc_last, QString restore_dest, int incremental_idx,
-                                 MySQLConnection *ndb, QObject *parent) :
+                                 MySQLConnection *ndb, QString mysql_data_dir, QObject *parent) :
     QObject(parent),
     db(ndb),
     target_dir(target),
     base_dir(inc_base),
     last_dir(inc_last),
     restore_dir(restore_dest),
-    restore_inc_idx(incremental_idx)
+    restore_inc_idx(incremental_idx),
+    datadir(mysql_data_dir)
 {
 }
 
@@ -60,76 +61,86 @@ rsync -a backup.last/ restore-inc-3
 */
 
 void NonInnoDBSyncer::startBackup() {
-    {
-            QString datadir = db->datadir;
-            QProcess rsync_process;
-        // on linux we can:
-        // find /var/lib/mysql -type d -print0 | xargs -P 3 -0 rsync [rsync-options]
-        // rsync --archive --no-times --ignore-times --inplace --delete --quiet --no-recursive --dirs
+    if(datadir.length() == 0) {
+        datadir = db->datadir;
+    }
+    if(datadir[datadir.length()-1] != '/') {
+        datadir.append("/");
+    }
+    QDir dir;
 
-            QString backupto;
-            QString additional_options;
-            if(base_dir.length()) {
-                if(last_dir.length()) {
-                    backupto = last_dir;
-                    additional_options = QString("--write-batch=").append(target_dir).append("/rsync.batch");
-                    QDir dir;
-                    if(!dir.exists(last_dir)) {
-                        //  rsync -a backup/ backup.last
-                        rsync_process.start("rsync",
-                                            QStringList() << "-av"
-                                            << (base_dir + "/")
-                                            << last_dir
-                                            );
-                        rsync_process.waitForFinished();
-                        qDebug() << rsync_process.readAll();
-                    }
-                } else {
-                    backupto = base_dir;
-                }
-            } else {
-                backupto = target_dir;
+
+    QProcess rsync_process;
+    // on linux we can:
+    // find /var/lib/mysql -type d -print0 | xargs -P 3 -0 rsync [rsync-options]
+    // rsync --archive --no-times --ignore-times --inplace --delete --quiet --no-recursive --dirs
+
+    QString backupto;
+    QString additional_options;
+    if(base_dir.length()) {
+        if(last_dir.length()) {
+            backupto = last_dir;
+
+            if(!dir.exists(target_dir)) {
+                dir.mkdir(target_dir);
             }
 
+            additional_options = QString("--write-batch=").append(target_dir).append("/rsync.batch");
             QDir dir;
-            if(!dir.exists(backupto)) {
-                dir.mkdir(backupto);
-            }
-
-            db->lock_all_tables();
-            if(additional_options.length()) {
+            if(!dir.exists(last_dir)) {
+                //  rsync -a backup/ backup.last
                 rsync_process.start("rsync",
                                     QStringList() << "-av"
-                                    << "--no-times"
-                                    << "--ignore-times"
-                                    << "--inplace"
-                                    << "--delete"
-                                    << "--exclude=*.ibd"
-                                    << "--exclude=ibdata*"
-                                    << "--exclude=ib_log*"
-                                    << additional_options
-                                    << (datadir + ".")
-                                    << (backupto + "/."));
-            } else {
-            rsync_process.start("rsync",
-                                QStringList() << "-av"
-                                << "--no-times"
-                                << "--ignore-times"
-                                << "--inplace"
-                                << "--delete"
-                                << "--exclude=*.ibd"
-                                << "--exclude=ibdata*"
-                                << "--exclude=ib_log*"
-                                << (datadir + ".")
-                                << (backupto + "/."));
+                                    << (base_dir + "/")
+                                    << last_dir
+                                    );
+                rsync_process.waitForFinished();
+                qDebug() << rsync_process.readAll();
             }
-
-//            qDebug() << rsync_process.program() << rsync_process.arguments();
-
-            rsync_process.waitForFinished();
-            qDebug() << rsync_process.readAll();
-            emit readyToUnlock();
+        } else {
+            backupto = base_dir;
         }
+    } else {
+        backupto = target_dir;
+    }
+
+    if(!dir.exists(backupto)) {
+        dir.mkdir(backupto);
+    }
+
+    db->lock_all_tables();
+    if(additional_options.length()) {
+        rsync_process.start("rsync",
+                            QStringList() << "-av"
+                            << "--no-times"
+                            << "--ignore-times"
+                            << "--inplace"
+                            << "--delete"
+                            << "--exclude=*.ibd"
+                            << "--exclude=ibdata*"
+                            << "--exclude=ib_log*"
+                            << additional_options
+                            << (datadir + ".")
+                            << (backupto + "/."));
+    } else {
+        rsync_process.start("rsync",
+                            QStringList() << "-av"
+                            << "--no-times"
+                            << "--ignore-times"
+                            << "--inplace"
+                            << "--delete"
+                            << "--exclude=*.ibd"
+                            << "--exclude=ibdata*"
+                            << "--exclude=ib_log*"
+                            << (datadir + ".")
+                            << (backupto + "/."));
+    }
+
+    qDebug() << rsync_process.program() << rsync_process.arguments();
+
+    rsync_process.waitForFinished();
+    qDebug() << rsync_process.readAll() << rsync_process.readAllStandardError();
+    emit readyToUnlock();
 }
 
 

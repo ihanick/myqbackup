@@ -14,6 +14,7 @@ public:
                              QString restore_dest,
                              int incremental_idx,
                              MySQLConnection *ndb,
+                             QString mysql_data_dir = "",
                              QObject *parent = 0);
     
 signals:
@@ -35,12 +36,12 @@ public slots:
     
 private:
     MySQLConnection *db;
-    QString datadir;
     QString target_dir;
     QString base_dir;
     QString last_dir;
     QString restore_dir;
     int restore_inc_idx;
+    QString datadir;
 
 protected:
     void applyIncremental(int idx);

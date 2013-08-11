@@ -27,6 +27,8 @@ public:
     QString restore_dir;
 
     bool is_restore_mode;
+
+    QString ssh_host;
 };
 
 #endif // MYQBACKUPCONFIGURATION_H
