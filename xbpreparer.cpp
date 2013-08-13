@@ -1,8 +1,10 @@
 #include "xbpreparer.h"
 
-XBPreparer::XBPreparer(QString target, int prepare_type, int incremental_idx_, QString restore_to, QString nxtrabackup_binary, bool compression, QString remote, QObject *parent) :
+XBPreparer::XBPreparer(QString target, int prepare_type, int incremental_idx_, QString restore_to, QString nxtrabackup_binary, QString xbstream_bin, QString qcompress_bin, bool compression, QString remote, QObject *parent) :
     QObject(parent),
     xtrabackup_binary(nxtrabackup_binary),
+    xbstream_binary(xbstream_bin),
+    qpress_path(qcompress_bin),
     target_dir(target),
     type(prepare_type),
     incremental_idx(incremental_idx_),
@@ -49,7 +51,7 @@ void XBPreparer::prepare() {
             xbunpack.setStandardInputFile(target_dir+".xbstream");
             xbunpack.setWorkingDirectory(target_dir);
             xbunpack.start(
-                        "/Users/ihanick/src/xtrabackup-2.1/src/xbstream",
+                        xbstream_binary,
                         QStringList()
                         << "-x"
                         );
@@ -274,7 +276,7 @@ void XBPreparer::extract_xtrabackup_stream(QString src, QString dst) {
     xbunpack.setStandardInputFile(src);
     xbunpack.setWorkingDirectory(dst);
     xbunpack.start(
-                "/Users/ihanick/src/xtrabackup-2.1/src/xbstream",
+                xbstream_binary,
                 QStringList()
                 << "-x"
                 );
@@ -290,12 +292,11 @@ void XBPreparer::extract_xtrabackup_stream(QString src, QString dst) {
     // if compression
     QProcess decompressor;
     decompressor.setWorkingDirectory(dst);
-    QString qpress_path("/Users/ihanick/src/qpress/");
     decompressor.start(
                 "bash",
                 QStringList()
                 << "-c"
-                << (QString("for bf in `find . -iname \"*\\.qp\"`; do %1qpress -d $bf $(dirname $bf) && rm $bf; done").arg(qpress_path))
+                << (QString("for bf in `find . -iname \"*\\.qp\"`; do %1 -d $bf $(dirname $bf) && rm $bf; done").arg(qpress_path))
                 );
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     qDebug() << decompressor.program() << decompressor.arguments();

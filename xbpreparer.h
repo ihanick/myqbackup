@@ -12,7 +12,9 @@ class XBPreparer : public QObject
 public:
     explicit XBPreparer(QString target, int prepare_type,
                         int incremental_idx_, QString restore_to,
-                        QString xtrabackup_binary, bool compression, QString remote, QObject *parent = 0);
+                        QString xtrabackup_binary, QString xbstream_bin,
+                        QString qcompress_bin,
+                        bool compression, QString remote, QObject *parent = 0);
     
 signals:
     void backup_ready();
@@ -25,6 +27,8 @@ public slots:
     
 private:
     QString xtrabackup_binary;
+    QString xbstream_binary;
+    QString qpress_path;
     QString target_dir;
     int type;
     int incremental_idx;

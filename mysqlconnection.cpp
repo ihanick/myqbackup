@@ -15,7 +15,6 @@ MySQLConnection::MySQLConnection(QString server_, QString user_,
     password = ""; /* set me first */
     database = "mysql";
 
-
 #ifdef USE_LIB_MYSQL_CLIENT
     MYSQL_RES *res;
     MYSQL_ROW row;

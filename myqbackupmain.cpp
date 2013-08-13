@@ -81,6 +81,8 @@ void MyQBackupMain::start() {
         xtrabackup_binary = "xtrabackup";
     }
 
+    QString qpress = conf->xtrabackup_path + "qpress";
+    QString xbstream = conf->xtrabackup_path + "xbstream";
     QString xbbinary = conf->xtrabackup_path.append(xtrabackup_binary);
 
 
@@ -106,17 +108,17 @@ void MyQBackupMain::start() {
 
     if(conf->max_incrementals == 0) { // prepare standalone full backup
         directory_preparer = new XBPreparer(backup_dest, 0, incremental_idx,
-                                            conf->restore_dir, xbbinary, conf->compression, conf->ssh_host, this);
+                                            conf->restore_dir, xbbinary, xbstream, qpress, conf->compression, conf->ssh_host, this);
     } else if(incremental_idx == 0) {
         directory_preparer = new XBPreparer(backup_dest, 1, incremental_idx,
-                                            conf->restore_dir, xbbinary, conf->compression, conf->ssh_host, this);
+                                            conf->restore_dir, xbbinary, xbstream, qpress, conf->compression, conf->ssh_host, this);
     } else if(incremental_idx > conf->max_incrementals) {
         directory_preparer = new XBPreparer(backup_dest, 2, incremental_idx,
-                                            conf->restore_dir, xbbinary, conf->compression, conf->ssh_host, this);
+                                            conf->restore_dir, xbbinary, xbstream, qpress, conf->compression, conf->ssh_host, this);
 
     } else {
         directory_preparer = new XBPreparer(backup_dest, 3, incremental_idx,
-                                            conf->restore_dir, xbbinary, conf->compression, conf->ssh_host, this);
+                                            conf->restore_dir, xbbinary, xbstream, qpress, conf->compression, conf->ssh_host, this);
     }
 
     // backup
