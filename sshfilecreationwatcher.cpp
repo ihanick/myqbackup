@@ -32,7 +32,9 @@ void SshFileCreationWatcher::watch_for_file(QString newfilename) {
                 << "-c"
                 << ( QString("\"while [ ! -f '%1' ] ; do sleep 1 ; done\"").arg(filename) )
                 );
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     qDebug() << process.program() << process.arguments();
+#endif
     if(!process.waitForStarted()) {
         emit terminate();
     }
@@ -43,7 +45,9 @@ void SshFileCreationWatcher::remove_file() {
                this, SLOT(ssh_check_finished(int,QProcess::ExitStatus)));
 
     process.start( "ssh", QStringList() << ssh_remote_access << "rm" << filename );
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     qDebug() << process.program() << process.arguments();
+#endif
     if(!process.waitForStarted()) {
         emit terminate();
     }

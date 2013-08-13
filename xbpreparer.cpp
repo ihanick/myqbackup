@@ -54,7 +54,9 @@ void XBPreparer::prepare() {
                         << "-x"
                         );
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
             qDebug() << xbunpack.program() << xbunpack.arguments();
+#endif
             xbunpack.waitForFinished();
             qDebug() << xbunpack.readAll() << xbunpack.readAllStandardError();
         }
@@ -109,7 +111,9 @@ void XBPreparer::prepare() {
                               << "-xzf"
                               << (last_inc_dir.absolutePath() + "/full.tar.gz")
                               );
-            //            qDebug() << tar_process.program() << tar_process.arguments();
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+	    qDebug() << tar_process.program() << tar_process.arguments();
+#endif
             tar_process.waitForFinished();
             qDebug() << tar_process.readAll() << tar_process.readAllStandardError();
         }
@@ -137,7 +141,9 @@ void XBPreparer::prepare() {
     }
     xtrabackup_prepare_process.waitForFinished();
     qDebug() << "Backup prepared by" << xtrabackup_binary << type;
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     qDebug() << xtrabackup_prepare_process.program() << xtrabackup_prepare_process.arguments();
+#endif
     qDebug() << xtrabackup_prepare_process.readAll()
              << xtrabackup_prepare_process.readAllStandardError();
 
@@ -153,7 +159,9 @@ void XBPreparer::prepare() {
                               << (last_inc_dir.absolutePath() + "/full.tar.gz")
                               << "./"
                               );
-//            qDebug() << tar_process.program() << tar_process.arguments();
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+	    qDebug() << tar_process.program() << tar_process.arguments();
+#endif
             tar_process.waitForFinished();
             qDebug() << tar_process.readAll();
 
@@ -186,7 +194,9 @@ void XBPreparer::prepare() {
                               << (last_inc_dir.absolutePath() + "/full.tar.gz")
                               << "./"
                               );
-//            qDebug() << tar_process.program() << tar_process.arguments();
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+	    qDebug() << tar_process.program() << tar_process.arguments();
+#endif
             tar_process.waitForFinished();
             qDebug() << tar_process.readAll() << tar_process.readAllStandardError();
 
@@ -217,7 +227,9 @@ void XBPreparer::restoreBackup() {
                           << "-xzf"
                           << (last_inc_dir.absolutePath() + "/full.tar.gz")
                           );
-//        qDebug() << tar_process.program() << tar_process.arguments();
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+	qDebug() << tar_process.program() << tar_process.arguments();
+#endif
         tar_process.waitForFinished();
         qDebug() << tar_process.readAll();
     } else {
@@ -228,7 +240,9 @@ void XBPreparer::restoreBackup() {
                             << (base_dir + "/")
                             << (restore_dir + "/.")
                             );
-        //    qDebug() << rsync_process.program() << rsync_process.arguments();
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+	qDebug() << rsync_process.program() << rsync_process.arguments();
+#endif
         rsync_process.waitForFinished();
         qDebug() << rsync_process.readAll();
     }
@@ -242,7 +256,9 @@ void XBPreparer::restoreBackup() {
                     << "--prepare" << "--apply-log-only"
                     << QString("--target-dir=").append(restore_dir)
                     << QString("--incremental-dir=").append(inc_path));
-        //        qDebug() << xtrabackup_prepare_process.program() << xtrabackup_prepare_process.arguments();
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+        qDebug() << xtrabackup_prepare_process.program() << xtrabackup_prepare_process.arguments();
+#endif
         xtrabackup_prepare_process.waitForFinished();
         qDebug() << xtrabackup_prepare_process.readAll()
                  << xtrabackup_prepare_process.readAllStandardError();
@@ -263,7 +279,9 @@ void XBPreparer::extract_xtrabackup_stream(QString src, QString dst) {
                 << "-x"
                 );
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     qDebug() << xbunpack.program() << xbunpack.arguments();
+#endif
     xbunpack.waitForFinished();
     qDebug() << xbunpack.readAll() << xbunpack.readAllStandardError();
     last_inc_dir.mkdir(last_inc_dir.absolutePath() + "/fake-full");
@@ -279,7 +297,9 @@ void XBPreparer::extract_xtrabackup_stream(QString src, QString dst) {
                 << "-c"
                 << (QString("for bf in `find . -iname \"*\\.qp\"`; do %1qpress -d $bf $(dirname $bf) && rm $bf; done").arg(qpress_path))
                 );
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     qDebug() << decompressor.program() << decompressor.arguments();
+#endif
     decompressor.waitForFinished();
     qDebug() << decompressor.readAll() << decompressor.readAllStandardError();
 }

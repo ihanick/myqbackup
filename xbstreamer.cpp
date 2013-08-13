@@ -81,7 +81,9 @@ void XBStreamer::start() {
                     << "--suspend-at-end"
                     );
     }
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     qDebug() << process.program() << process.arguments();
+#endif
     if(!process.waitForStarted()) {
         emit terminate();
     }

@@ -136,7 +136,9 @@ void NonInnoDBSyncer::startBackup() {
                             << (backupto + "/."));
     }
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     qDebug() << rsync_process.program() << rsync_process.arguments();
+#endif
 
     rsync_process.waitForFinished();
     qDebug() << rsync_process.readAll() << rsync_process.readAllStandardError();
@@ -160,7 +162,9 @@ void NonInnoDBSyncer::rotateBackup() {
                         << (dir.absolutePath()+"/inc-1/rsync.batch")
                         << (base_dir + "/")
                         );
-//    qDebug() << rsync_process.program() << rsync_process.arguments();
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+    qDebug() << rsync_process.program() << rsync_process.arguments();
+#endif
     rsync_process.waitForFinished();
     qDebug() << rsync_process.readAll();
 }
@@ -180,7 +184,9 @@ void NonInnoDBSyncer::restoreBackup() {
                         << (base_dir + "/")
                         << (restore_dir + "/.")
                         );
-//    qDebug() << rsync_process.program() << rsync_process.arguments();
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+    qDebug() << rsync_process.program() << rsync_process.arguments();
+#endif
     rsync_process.waitForFinished();
     qDebug() << rsync_process.readAll();
 
@@ -211,6 +217,8 @@ void NonInnoDBSyncer::applyIncremental(int idx) {
                         << (dir.absolutePath()+(QString("/inc-%1/rsync.batch").arg(idx)) )
                         << (restore_dir + "/."));
     rsync_process.waitForFinished();
-//    qDebug() << rsync_process.program() << rsync_process.arguments();
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+    qDebug() << rsync_process.program() << rsync_process.arguments();
+#endif
     qDebug() << rsync_process.readAll();
 }
