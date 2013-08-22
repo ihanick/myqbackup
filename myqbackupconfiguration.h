@@ -20,6 +20,7 @@ public:
     QString xtrabackup_prefix;
     bool compression;
     QString server;
+    int     port;
     QString user;
     QString password;
     QString database;

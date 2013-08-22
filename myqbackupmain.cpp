@@ -1,10 +1,10 @@
 #include "myqbackupmain.h"
 
 
-MyQBackupMain::MyQBackupMain(QCoreApplication* app, QObject *parent) :
-    QObject(parent), myapp(app)
+MyQBackupMain::MyQBackupMain(QObject *parent) :
+    QObject(parent)
 {
-    conf = new MyQBackupConfiguration(myapp);
+    conf = new MyQBackupConfiguration(this);
     incremental_idx=-1;
 }
 
@@ -66,7 +66,9 @@ void MyQBackupMain::start() {
         backup_inc_path = backup_dest_dir.absolutePath() + QString("/inc-%1").arg(conf->max_incrementals);
     }
 
-    MySQLConnection *myconnection = new MySQLConnection(conf->server, conf->user,
+    MySQLConnection *myconnection = new MySQLConnection(conf->server,
+                                                        conf->port,
+                                                        conf->user,
                                                         conf->password, conf->database, this);
 
     version = myconnection->version;
@@ -125,7 +127,7 @@ void MyQBackupMain::start() {
     if(! conf->is_restore_mode) {
 
         if(conf->ssh_host.length() == 0) {
-            connect(backupctl, SIGNAL(terminate()), myapp, SLOT(quit()));
+            connect(backupctl, SIGNAL(terminate()), this, SLOT(quit()));
 
             FileCreationWatcherThread* xtrabackup_start_watcher = new FileCreationWatcherThread(this);
             connect(xtrabackup_start_watcher, SIGNAL(file_created()),
@@ -152,13 +154,13 @@ void MyQBackupMain::start() {
                              rsync_syncer, SLOT(rotateBackup()));
 
             connect(directory_preparer, SIGNAL(backup_ready()),
-                             myapp, SLOT(quit()));
+                             this, SLOT(quit()));
 
             backupctl->start(xbbinary);
         } else {
             // in case of errors exit
             connect(backup_streamer, SIGNAL(terminate()),
-                             myapp, SLOT(quit()));
+                             this, SLOT(quit()));
             // at the end of xtrabackup backup, lock tables
             connect(ssh_file_watcher, SIGNAL(file_created()),
                              myconnection, SLOT(lock_all_tables()));
@@ -185,7 +187,7 @@ void MyQBackupMain::start() {
 
             // after preparing backup we can exit
             connect(directory_preparer, SIGNAL(backup_ready()),
-                             myapp, SLOT(quit()));
+                             this, SLOT(quit()));
 
             ssh_file_watcher->watch_for_file("/tmp/xtrabackup_suspended_2");
             backup_streamer->start();

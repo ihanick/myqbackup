@@ -44,7 +44,8 @@ void XBPreparer::prepare() {
     case 0:
     {
         if(ssh_remote.length() != 0) {
-            qDebug() << "should unpack standalone full backup to" << target_dir;
+            qDebug() << "should unpack standalone full backup to" << target_dir
+                     << (target_dir+".xbstream");
             QDir dir(target_dir);
             dir.mkdir(target_dir);
             QProcess xbunpack;
@@ -93,7 +94,8 @@ void XBPreparer::prepare() {
     case 2:
     {
         if(ssh_remote.length() != 0) {
-            qDebug() << "should unpack incremental backup to" << target_dir;
+            qDebug() << "should unpack incremental backup to" << target_dir
+                     << "from:"<< (target_dir+".xbstream");
             extract_xtrabackup_stream(target_dir+".xbstream", target_dir);
         }
 

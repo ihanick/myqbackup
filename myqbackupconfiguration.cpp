@@ -21,8 +21,9 @@ MyQBackupConfiguration::MyQBackupConfiguration(QObject *parent) :
 
 
     settings.beginGroup("DatabaseAccess");
-    server = settings.value("server","localhost").toString();
-    user = settings.value("user","root").toString();
+    server   = settings.value("server","localhost").toString();
+    port     = settings.value("port","3306").toInt();
+    user     = settings.value("user","root").toString();
     password = settings.value("password","").toString();
     database = settings.value("database","mysql").toString();
     settings.endGroup();
@@ -34,6 +35,16 @@ MyQBackupConfiguration::MyQBackupConfiguration(QObject *parent) :
         QStringList()
             << QLatin1String( "?" )
             << QLatin1String( "help" ) ) );
+
+    // --configure
+    cliParser.addOption( CliOption(
+        QStringList()
+            << QLatin1String( "c" )
+            << QLatin1String( "save-settings" )
+            << QLatin1String( "write-configuration" )
+            << QLatin1String( "configure" ) ) );
+
+    // --compress
 
     // --compress
     cliParser.addOption( CliOption(
@@ -76,6 +87,14 @@ MyQBackupConfiguration::MyQBackupConfiguration(QObject *parent) :
             << QLatin1String( "h" )
             << QLatin1String( "host" )
             << QLatin1String( "server" ), true ) );
+
+    // --port
+    cliParser.addOption( CliOption(
+        QStringList()
+            << QLatin1String( "P" )
+            << QLatin1String( "port" )
+            << QLatin1String( "mysql-port" ), true ) );
+
 
     // --user
     cliParser.addOption( CliOption(
@@ -146,6 +165,13 @@ MyQBackupConfiguration::MyQBackupConfiguration(QObject *parent) :
         qDebug() << "connection parameters: host"<< server;
     }
 
+
+    const QString port_arg = cliParser.getArgument( QLatin1String( "port" ) );
+    if(!server_arg.isNull()) {
+        port = port_arg.toInt();
+        qDebug() << "connection parameters: port"<< port;
+    }
+
     const QString user_arg = cliParser.getArgument( QLatin1String( "user" ) );
     if(!user_arg.isNull()) {
         user = user_arg;
@@ -174,21 +200,24 @@ MyQBackupConfiguration::MyQBackupConfiguration(QObject *parent) :
     const QStringList optionNames = cliParser.getOptionNames();
     qDebug() << "option names"<< optionNames;
 
-    settings.beginGroup("BackupParameters");
-    if(restore_dir.length() == 0) {
-        settings.setValue("incrementals", max_incrementals);
-    }
-    settings.setValue("backup_path", backup_dest);
-    settings.setValue("xtrabackup_prefix", xtrabackup_prefix);
-    settings.setValue("full_backup_compression", compression);
-    settings.endGroup();
+    if(! cliParser.getArgument(QLatin1String("configure")).isNull()) {
+        settings.beginGroup("BackupParameters");
+        if(restore_dir.length() == 0) {
+            settings.setValue("incrementals", max_incrementals);
+        }
 
-    settings.beginGroup("DatabaseAccess");
-    settings.setValue("server", server);
-    settings.setValue("user", user);
-    settings.setValue("password", password);
-    settings.setValue("database", database);
-    settings.endGroup();
+        settings.setValue("backup_path", backup_dest);
+        settings.setValue("xtrabackup_prefix", xtrabackup_prefix);
+        settings.setValue("full_backup_compression", compression);
+        settings.endGroup();
+
+        settings.beginGroup("DatabaseAccess");
+        settings.setValue("server", server);
+        settings.setValue("user", user);
+        settings.setValue("password", password);
+        settings.setValue("database", database);
+        settings.endGroup();
+    }
 
     xtrabackup_path = (xtrabackup_prefix + "/");
 }

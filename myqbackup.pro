@@ -45,3 +45,9 @@ unix: !macx {
 INCLUDEPATH += /usr/include/mysql
 LIBS += -lmysqlclient_r
 }
+
+macx {
+  INCLUDEPATH += /usr/local/include
+  LIBS += /usr/local/lib/libmysqlclient.a
+}
+

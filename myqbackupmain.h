@@ -23,17 +23,19 @@ class MyQBackupMain : public QObject
 {
     Q_OBJECT
 public:
-    explicit MyQBackupMain(QCoreApplication* app, QObject *parent = 0);
+    explicit MyQBackupMain(QObject *parent = 0);
     void start();
     
 signals:
+    void terminate();
     
 public slots:
+    void quit() {
+        emit terminate();
+    }
     
 
 private:
-    QCoreApplication* myapp;
-
     MyQBackupConfiguration *conf;
     QString datadir;
     QString version;

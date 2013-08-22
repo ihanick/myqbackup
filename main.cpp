@@ -1,6 +1,8 @@
 #include <QCoreApplication>
 #include "myqbackupmain.h"
 
+#include <mysql.h>
+MYSQL *conn;
 
 /* incremental mode
  * --incremental-copies=N
@@ -10,8 +12,14 @@
  * */
 int main(int argc, char *argv[])
 {
+    // having different thread id after running mysql_init
+    conn = mysql_init(NULL);
+
     QCoreApplication a(argc, argv);
-    MyQBackupMain* backupcontroller = new MyQBackupMain(&a, &a);
+    MyQBackupMain* backupcontroller = new MyQBackupMain(&a);
+
+    QObject::connect(backupcontroller, SIGNAL(terminate()),
+                     &a, SLOT(quit()));
 
     backupcontroller->start();
 

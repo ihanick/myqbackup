@@ -1,30 +1,41 @@
 #include "mysqlconnection.h"
 #include "stdio.h"
+#include <QDebug>
 
-MySQLConnection::MySQLConnection(QString server_, QString user_,
+MySQLConnection::MySQLConnection(QString server_, int port_, QString user_,
                                  QString password_, QString database_, QObject *parent) :
     QObject(parent),
     server(server_),
+    port(port_),
     user(user_),
     password(password_),
     database(database_)
 {
 
-    server = "localhost";
-    user = "root";
-    password = ""; /* set me first */
-    database = "mysql";
-
 #ifdef USE_LIB_MYSQL_CLIENT
     MYSQL_RES *res;
     MYSQL_ROW row;
 
-    conn = mysql_init(NULL);
     /* Connect to database */
-    if (!mysql_real_connect(conn, server.toLocal8Bit().data(),
-                            user.toLocal8Bit().data(), password.toLocal8Bit().data(),
-                            database.toLocal8Bit().data(), 0, NULL, 0)) {
-       fprintf(stderr, "%s\n", mysql_error(conn));
+    if (!mysql_real_connect(conn,
+                            server.toLocal8Bit().data(),
+                            user.toLocal8Bit().data(),
+                            password.toLocal8Bit().data(),
+                            database.toLocal8Bit().data(),
+                            port,
+                            NULL,
+                            0)
+            ) {
+
+        fprintf(stderr, "%s, %s, %s, %s, %d",
+                server.toLocal8Bit().data(),
+                user.toLocal8Bit().data(),
+                password.toLocal8Bit().data(),
+                database.toLocal8Bit().data(),
+                port,
+                NULL
+                );
+        qDebug() << "MySQL connection error:"<< mysql_error(conn);
        exit(1);
     }
     /* send SQL query */
@@ -46,6 +57,8 @@ MySQLConnection::MySQLConnection(QString server_, QString user_,
     while ((row = mysql_fetch_row(res)) != NULL)
        version = row[0];
     mysql_free_result(res);
+
+    qDebug() << "Got mysql parameters from connection:" << datadir << version;
 #else
     datadir = "/var/lib/mysql";
     version = "5.5.32";
@@ -61,6 +74,7 @@ MySQLConnection::~MySQLConnection() {
 }
 
 void MySQLConnection::lock_all_tables() {
+    qDebug() << "Locking all tables";
 #ifdef USE_LIB_MYSQL_CLIENT
     if (mysql_query(conn, "FLUSH TABLES WITH READ LOCK")) {
        fprintf(stderr, "%s\n", mysql_error(conn));
@@ -72,6 +86,7 @@ void MySQLConnection::lock_all_tables() {
 
 
 void MySQLConnection::unlock_all_tables() {
+    qDebug() << "Unlocking all tables";
 #ifdef USE_LIB_MYSQL_CLIENT
     if (mysql_query(conn, "UNLOCK TABLES")) {
        fprintf(stderr, "%s\n", mysql_error(conn));

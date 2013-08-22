@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 2.7.2, 2013-08-13T08:05:16. -->
+<!-- Written by QtCreator 2.7.2, 2013-08-22T14:27:14. -->
 <qtcreator>
  <data>
   <variable>ProjectExplorer.Project.ActiveTarget</variable>
@@ -226,7 +226,7 @@
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
     <value type="QByteArray" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4RunConfiguration:/Users/ihanick/src/myqbackup/myqbackup.pro</value>
     <value type="int" key="Qt4ProjectManager.Qt4RunConfiguration.BaseEnvironmentBase">2</value>
-    <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.CommandLineArguments">--remote-ssh=root@udb1 --xbprefix=/Users/ihanick/src/xtrabackup-2.1/src /Users/ihanick/myqbackup</value>
+    <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.CommandLineArguments">--ssh=root@dev --host=127.0.0.1 --port=3307 --database=mysql --user=root /Users/ihanick/dev/myqbackup --xbprefix=/Users/ihanick/src/percona-xtrabackup/src</value>
     <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.ProFile">myqbackup.pro</value>
     <value type="bool" key="Qt4ProjectManager.Qt4RunConfiguration.UseDyldImageSuffix">false</value>
     <value type="bool" key="Qt4ProjectManager.Qt4RunConfiguration.UseTerminal">true</value>
@@ -247,7 +247,7 @@
  </data>
  <data>
   <variable>ProjectExplorer.Project.Updater.EnvironmentId</variable>
-  <value type="QString">{655610b4-9046-4e6c-8959-0877e05d14ec}</value>
+  <value type="QString">{821c6091-91d1-42d5-b19d-4655f701b0f1}</value>
  </data>
  <data>
   <variable>ProjectExplorer.Project.Updater.FileVersion</variable>
