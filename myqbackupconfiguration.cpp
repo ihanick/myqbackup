@@ -16,6 +16,8 @@ MyQBackupConfiguration::MyQBackupConfiguration(QObject *parent) :
     xtrabackup_prefix = settings.value("xtrabackup_prefix",
                                                "/home/ihanick/src/percona-xtrabackup-2.1.3/bin").toString();
     compression = settings.value("full_backup_compression", false).toBool();
+    remotetmp = settings.value("remote_tmp",
+                                       "/tmp").toString();
 
     settings.endGroup();
 
@@ -80,6 +82,14 @@ MyQBackupConfiguration::MyQBackupConfiguration(QObject *parent) :
             << QLatin1String( "x" )
             << QLatin1String( "xbprefix" )
             << QLatin1String( "xtrabackup-prefix" ), true ) );
+
+
+    // --remote-tmp
+    cliParser.addOption( CliOption(
+        QStringList()
+            << QLatin1String( "tmp" )
+            << QLatin1String( "remote-tmp" )
+            << QLatin1String( "remote-tmpdir" ), true ) );
 
     // --host
     cliParser.addOption( CliOption(
@@ -146,6 +156,12 @@ MyQBackupConfiguration::MyQBackupConfiguration(QObject *parent) :
     if(!xbprefix_arg.isNull()) {
         xtrabackup_prefix =xbprefix_arg;
         qDebug() << "Xtrabackup installation prefix"<< xtrabackup_prefix;
+    }
+
+    const QString remotetmp_arg = cliParser.getArgument( QLatin1String( "remote-tmp" ) );
+    if(!remotetmp_arg.isNull()) {
+        remotetmp = remotetmp_arg;
+        qDebug() << "Xtrabackup remote temporary directory"<< remotetmp;
     }
 
     const QString inc_arg = cliParser.getArgument( QLatin1String( "i" ) );

@@ -30,6 +30,7 @@ public:
     bool is_restore_mode;
 
     QString ssh_host;
+    QString remotetmp;
 };
 
 #endif // MYQBACKUPCONFIGURATION_H

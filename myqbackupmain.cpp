@@ -21,6 +21,12 @@ void MyQBackupMain::start() {
     QDir backup_dest_dir(conf->backup_dest);
     QString backup_dest = conf->backup_dest;
 
+    if(!backup_dest_dir.exists()) {
+        qDebug() << "Backup destination directory doesn't exists at" << conf->backup_dest;
+        exit(1);
+    }
+
+
     if(! conf->is_restore_mode) {
         if(conf->max_incrementals) {
             ni_inc_base = backup_dest_dir.absolutePath() + "/mysql-base-full";
@@ -87,6 +93,20 @@ void MyQBackupMain::start() {
     QString xbstream = conf->xtrabackup_path + "xbstream";
     QString xbbinary = conf->xtrabackup_path.append(xtrabackup_binary);
 
+    if(!QFile::exists(xbbinary)) {
+        qDebug() << "Can't find xtrabackup binary at" << xbbinary;
+        exit(1);
+    }
+
+    if(!QFile::exists(xbstream)) {
+        qDebug() << "Can't find xbstream binary at" << xbstream;
+        exit(1);
+    }
+
+    if(!QFile::exists(qpress)) {
+        qDebug() << "Can't find qpress binary at" << qpress;
+        exit(1);
+    }
 
     qDebug() << "binary:"<< xbbinary;
     qDebug() << "Dir for files:"<< backup_dest;
@@ -189,7 +209,7 @@ void MyQBackupMain::start() {
             connect(directory_preparer, SIGNAL(backup_ready()),
                              this, SLOT(quit()));
 
-            ssh_file_watcher->watch_for_file("/tmp/xtrabackup_suspended_2");
+            ssh_file_watcher->watch_for_file(conf->remotetmp+"/xtrabackup_suspended_2");
             backup_streamer->start();
         }
     } else {
